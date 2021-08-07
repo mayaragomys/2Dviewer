@@ -6,5 +6,5 @@
 ![Visualizador-2D](https://github.com/mayaragomys/2Dviewer/blob/main/Visualizador-2D-Google-Chrome-20.gif)
 
 ## Documentação do Sistema </h1>
-A documentação está disponível na pasta ...
+A documentação está disponível na pasta ![documentation](https://github.com/mayaragomys/2Dviewer/tree/main/documentation)
 As informações sobre o projeto como manual do usuário, tecnologias utilizadas, constam no arquivo do projeto de programação final, disponívem em ...
