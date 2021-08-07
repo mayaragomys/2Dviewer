@@ -1,0 +1,5 @@
+
+segyio
+flask
+errno
+simplejson

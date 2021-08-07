@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Basic Page Info -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+        <title>Visualizador 2D</title>
+        <link rel='icon' type='image/png' href='/static/css/icones/favicon-32x32.png' sizes="32x32" />
+        <link rel='icon' type='image/png' href='/static/css/icones/favicon-16x16.png' sizes="16x16" />
+
+        <!-- ### arquivos style da página ###-->
+        <link href='/static/css/style.css' type='text/css' rel='stylesheet' />
+        <!-- Barra de progresso-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.css" integrity="
+        sha512-DanfxWBasQtq+RtkNAEDTdX4Q6BPCJQ/kexi/RftcP0BcA4NIJPSi7i31Vl+Yl5OCfgZkdJmCqz+byTOIIRboQ==" crossorigin="anonymous" />
+        <!-- Treeview-->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> 
+        <!-- font-awesome para os ícones-->
+        <link href='/static/css/font-awesome/css/font-awesome-ie7.css' type='text/css' rel='stylesheet' />
+        <link href='/static/css/font-awesome/css/font-awesome-ie7.min.css' type='text/css' rel='stylesheet' />
+        <link href='/static/css/font-awesome/css/font-awesome.css' type='text/css' rel='stylesheet' />
+        <link href='/static/css/font-awesome/css/font-awesome.min.css' type='text/css' rel='stylesheet' />
+
+    </head>
+
+    <!--body start-->
+    <body>
+        <div id="container">
+            <!--header start-->
+            <header>
+                <h3>Visualizador 2D</h3>
+            </header>
+            <!--header end-->
+            <!--main start-->
+            <div class="main">
+                <!--right start-->
+                <div class="right" >
+                    <h3>Configurações</h3>
+                    <hr>
+                    <!--Funçionalidades de escala-->
+                    <h4>Escala</h4>
+                    <div id="ui" style="margin-right:5%; margin-left: 5%;"></div >
+                    <hr>
+                    <!--Funcionalidade para mudar o mapa de cor-->
+                    <h4>Mapa de cores</h4>
+                    <div style="margin-top:9px; margin-left: 5%;" >
+                        <select id="colormapID"> </select>                         
+                    </div>            
+                </div>
+                <!--right end-->
+                <!--left start-->
+                <div class="left">
+                    <h3>Dados</h3>
+                    <hr>
+                    <div class="treeContainer" style="margin-right:1%; margin-left: 1%;">
+                        <div id="tree"></div>
+                    </div>
+                </div>
+                <!--left end-->
+                <!--center start-->
+                <div class="center">
+                    <div class="canvas-container" style="display: flex; flex-direction: row; ">
+                        <div class="icon-bar">
+                        <a ><i id="zoomIn" class="icon-zoom-in" title="Aumentar" ></i></a> 
+                        <a ><i id="zoomOut" class="icon-zoom-out"  title="Diminuir" ></i></a>
+                        <a ><i id="flip" class="icon-adjust" title="Flip"></i></a>         
+                        </div>   
+                        <canvas id="webglCanvas" class="canvas"></canvas>             
+                    </div>
+                </div>
+                <!--center end-->
+            </div>
+            <!--main end-->
+        </div>       
+         
+
+        <!-- Arquivos javascript-->
+        <!-- Jquery-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+        <!-- Matrizes-->
+        <script type="text/javascript" src="/static/js/gl-matrix.js"></script>
+        <!-- treeview -->
+        <script src="https://jonmiles.github.io/bootstrap-treeview/js/bootstrap-treeview.js"></script>
+        <!-- ui -->
+        <script type="text/javascript" src="/static/js/ui.js"></script>
+        <!-- Barra de progresso -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js" integrity="
+        sha512-bUg5gaqBVaXIJNuebamJ6uex//mjxPk8kljQTdM1SwkNrQD7pjS+PerntUSD+QRWPNJ0tq54/x4zRV8bLrLhZg==" crossorigin="anonymous"></script>
+
+        <script type="text/javascript" src='/static/js/utils.js'> </script>
+        <script type="text/javascript" src='/static/js/main.js'> </script>
+
+        <script >
+            //Color map 
+            var dataColorMap = {{ color_Map|safe }};
+            var colorMapPath = dataColorMap['path']
+            var colorMapName = dataColorMap['colorMaps']
+
+            $(function(){
+                var x=0;   
+                for(x=0; x<colorMapName.length; x++){
+                    var option = "<option value='" + x + "'>" + colorMapName[x] + "</option>"
+                    document.getElementById('colormapID').innerHTML += option;   
+                } 
+            });
+
+            // Or with jQuery
+
+            $(document).ready(function(){
+                $('.modal').modal();
+            });
+
+            //Tree view com os dados
+            var tree = {{ treeData|safe }};
+            var json;
+            var sliderActive = false;
+
+
+            $('#tree').treeview({data: tree, levels:1, onNodeSelected: function(event, data) {
+                var parent = $('#tree').treeview('getParent', data).text;
+                var pathJs = $('#tree').treeview('getParent', data).text;
+
+                pathJs = pathJs + '/' + data.text;                            
+
+            }});
+
+            $(function(){
+
+                $('#tree').treeview({data: tree, levels:1, onNodeSelected: function(event, data) {
+                    var parent = $('#tree').treeview('getParent', data).text;
+                    var pathJs = $('#tree').treeview('getParent', data).text;
+
+                    pathJs = pathJs + '/' + data.text;
+               
+                    NProgress.start()
+                    $.post( "/seismic2D", {javascript_data_2D: JSON.stringify(pathJs)}, function(response){
+                        json = JSON.stringify(response);
+                        sliderActive = false;
+                        $("#sliders").hide();
+                        $("#slidersPercentil").show();
+
+                        canvas.render2D(response.data,
+                                response.height,
+                                response.width,
+                                response.minValue,
+                                response.maxValue);
+                        //Atualizando o código do UI
+                        SlidersWidgets.scaleX.updateValue(1.0);
+                        SlidersWidgets.scaleY.updateValue(1.0);
+
+                        setInterval(draw, 15);
+                        NProgress.done()
+                        $('#modal1').modal('close'); 
+                    });                 
+
+                }});
+
+            });
+
+            
+        </script>
+    </body>
+    <!--body end-->
+</html>
