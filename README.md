@@ -3,4 +3,4 @@
 
 ## Documentação do Sistema </h1>
 A documentação está disponível na pasta [documentation](https://github.com/mayaragomys/2Dviewer/tree/main/documentation)
-As informações sobre o projeto como manual do usuário, tecnologias utilizadas, constam no arquivo do projeto de programação final, disponívem [aqui](https://github.com/mayaragomys/2Dviewer/blob/main/Projeto_de_programacao_.pdf)
+As informações sobre o projeto como manual do usuário, tecnologias utilizadas, constam no arquivo do projeto de programação final, disponível [aqui](https://github.com/mayaragomys/2Dviewer/blob/main/Projeto_de_programacao_.pdf)
